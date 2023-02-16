@@ -7,6 +7,8 @@ namespace TorneosV2.Model.Clases
     [Index(nameof(OrgId), IsUnique = false)]
     public class Z110_Usuario : IdentityUser
     {
+        [StringLength(25)]
+        public string? Apodo { get; set; }
         [StringLength(50)]
         public string Nombre { get; set; } = "";
         [StringLength(50)]

@@ -1,0 +1,143 @@
+﻿@page "/bitacora"
+
+@inherits BitacoraBase
+@using TorneosV2.Model.Clases
+
+<AuthorizeView>
+    <Authorized>
+
+        @if (LasBitas != null && LasBitas.Count() < 1)
+        {
+            <h3>Bitacora</h3>
+            <div class="spinner"></div>
+        }
+        else
+        {
+            <RadzenCard>
+                <div class="form-group row">
+                    <div class="col-sm-5"><h3>Bitacora</h3></div>
+                    <div class="col-sm-4">@LaOrgName</div>
+                    <div class="col-sm-2">
+                        <RadzenButton Icon="refresh" style="margin-bottom: 10px"
+                                  ButtonStyle="ButtonStyle.Success" Click="@LeerBitacoras" />
+                    </div>
+                </div>
+
+                @if (ElUser.Nivel > 4)
+                {
+                    <p style="display: none;">@(SearchBita.UserId = "Filtro")</p>
+                    <RadzenAccordion>
+                        <Items>
+                            <RadzenAccordionItem Text="Filtro" Icon="plus" Style="background:lightblue">
+                                <RadzenTemplateForm Data="@SearchBita" TItem="@Z190_Bitacora"
+                                            Submit="@LeerBitacoras" Context="DSearch">
+                                    <div class="form-group row">
+                                        <b>
+                                            <label for="Desc" class="col-sm-5 col-form-label">Descripcion</label>
+                                            <label for="Sistema" class="col-sm-3 col-form-label">Sistema</label>
+                                            <label for="Buscar" class="col-sm-3 col-form-label">Buscar</label>
+                                        </b>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-5">
+                                            <RadzenTextBox Name="Desc" @bind-Value=@SearchBita.Desc
+                                                   style="display: block; width: 90%;" />
+
+                                        </div>
+                                        <div class="col-sm-3">
+                                            No
+                                            <RadzenSwitch Name="Sistema" @bind-Value=@SearchBita.Sistema />
+                                            Si
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <RadzenButton Icon="refresh" ButtonType="ButtonType.Submit"
+                                                  ButtonStyle="ButtonStyle.Success" style="margin-bottom: 10px" />
+
+                                        </div>
+                                    </div>
+
+                                </RadzenTemplateForm>
+
+                            </RadzenAccordionItem>
+                        </Items>
+                    </RadzenAccordion>
+                }
+                else
+                {
+                    <RadzenButton Icon="refresh" Click="@LeerBitacoras"
+                          style="margin-bottom: 10px" ButtonStyle="ButtonStyle.Info" />
+                }
+
+            </RadzenCard>
+
+            <RadzenCard>
+                <RadzenDataGrid @ref="BitaGrid" AllowFiltering="true" AllowPaging="true" PageSize="50"
+                            AllowSorting="true" AllowColumnResize="true"
+                            ExpandMode="DataGridExpandMode.Single" AllowGrouping="false"
+                            EditMode="DataGridEditMode.Single"
+                            Data="@LasBitas" TItem="Z190_Bitacora" Context="DBitaAll">
+
+                    <Columns>
+                        <RadzenDataGridColumn TItem="@Z190_Bitacora" Filterable="false"
+                                          Title="Fecha" Frozen="true" Width="90px" TextAlign="TextAlign.Left">
+                            <Template Context=DBita>
+                                <label>@($"{@MyFunc.FormatoFecha("DD/MMM/AA", DBita.Fecha)}")</label>
+                                <br />
+                                <label>@($"{@MyFunc.LaHora(@DBita.Fecha, "S")}")</label>
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="@Z190_Bitacora" Filterable="false"
+                                          Title="Usuarios" Frozen="true" Width="140px" TextAlign="TextAlign.Left">
+                            <Template Context=DBita>
+                                @if (LosUsers.FirstOrDefault(x => x.Id == DBita.UserId) != null)
+                                {
+                                    <p style="white-space:pre-wrap">
+                                        <label>
+                                            @LosUsers.FirstOrDefault(x=> x.Id == DBita.UserId)!.Nombre
+                                            @LosUsers.FirstOrDefault(x=> x.Id == DBita.UserId)!.Paterno
+                                            @LosUsers.FirstOrDefault(x=> x.Id == DBita.UserId).Materno
+                                        </label>
+                                    </p>
+                                }
+                                else
+                                {
+                                    <label> No hay Nombre! </label>
+                                }
+
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="@Z190_Bitacora" Property="Desc" Filterable="true"
+                                          Title="Descripcion" Width="400px" TextAlign="TextAlign.Left">
+
+                            <Template Context=DBita>
+                                <p style="white-space:pre-wrap">
+                                    @DBita.Desc
+                                </p>
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenCard>
+        }
+
+    </Authorized>
+
+    <NotAuthorized>
+        <h1>Es necesario firmar para consultar la bitacora, </h1>
+        <RadzenLink Icon="accessibility" Path="Identity/Account/Login?ReturnUrl=/bitacora"
+                    Text="Firma" />
+
+    </NotAuthorized>
+</AuthorizeView>
+--TtnKa--
+
+@code {
+    async Task OnClick()
+    {
+        await Task.Delay(1);
+        SearchBita = null;
+    }
+
+}
